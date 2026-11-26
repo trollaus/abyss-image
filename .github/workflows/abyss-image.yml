@@ -1,8 +1,8 @@
 name: Abyss image
 
-# The abyss image is built here and published to ghcr.io/trollaus/abyss-image; the ansible role
-# (trollaus/infra-ansible, roles/containers/abyss) pulls a digest-pinned reference and
-# never builds on the host. This is the gate: the build runs the Dockerfile's own checks -
+# The abyss image is built here and published to ghcr.io/trollaus/abyss-image;
+# consumers pull a digest-pinned reference and never build on the host
+# (e.g. an ansible container role). This is the gate: the build runs the Dockerfile's own checks -
 # the engine tarball's `sha256sum -c` against ABYSS_ENGINE_SHA256, the PREBUILT.json commit
 # check against ABYSS_COMMIT, the pip install and the py_compile - so a stale pin (a version
 # moved, the companion pins stale) or a pip pin that no longer resolves fails the PR before
@@ -78,5 +78,5 @@ jobs:
         run: |
           # The `Digest:` line's sha256: value:
           digest=$(docker buildx imagetools inspect "ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)" | grep -m1 'sha256:' | cut -d: -f3)
-          # The host_vars bump line (juhovan/infra, the LLM host's `abyss.image`):
+          # The host_vars bump line for the consuming host (e.g. `abyss.image`):
           echo "abyss.image: ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)@sha256:${digest}"

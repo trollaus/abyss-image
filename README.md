@@ -1,7 +1,8 @@
 # trollaus/abyss-image
 
-The Docker image for the `abyss` role in [trollaus/infra-ansible](https://github.com/trollaus/infra-ansible)
-(`roles/containers/abyss`). The image repackages upstream release artifacts of
+The Docker image consumed by an `abyss` ansible container role - the role
+pulls a digest-pinned reference of this image and never builds on the host.
+The image repackages upstream release artifacts of
 [zephel01/Abyss](https://github.com/zephel01/Abyss) - no custom code: the server
 is fetched from the pinned commit, the engine is the release's prebuilt CUDA
 tarball, and the Python venv is pinned. The three `ARG` pins at the top of
@@ -22,7 +23,7 @@ new zephel01/Abyss release
   -> merge: CI publishes ghcr.io/trollaus/abyss-image:sha-<ABYSS_COMMIT short>
      (plus :latest on master) and prints the image digest
   -> one-line digest bump of the role's image reference (abyss.image in
-     juhovan/infra host_vars) -> deploy --tags abyss
+     the parent repo's host_vars) -> deploy --tags abyss
 ```
 
 The build is self-verifying on every run: a moved tag or a replaced release
@@ -46,9 +47,9 @@ Updates are driven by Renovate (weekly schedule, see `renovate.json`):
 3. Merge the PR: CI publishes the image and prints
    `abyss.image: ghcr.io/trollaus/abyss-image:sha-<short>@sha256:<digest>` at the
    end of the run.
-4. Copy that line into the LLM host's host_vars in juhovan/infra
-   (`abyss.image`; the role's README in trollaus/infra-ansible documents the
-   var), and deploy `--tags abyss`.
+4. Copy that line into the host's host_vars in the parent repo
+   (`abyss.image`; the consuming role documents the var), and deploy
+   `--tags abyss`.
 
 Check the pip pins against a new release when a bump lands (the comment above
 the `pip install` in the Dockerfile) and bump them in the same PR.
@@ -79,10 +80,9 @@ paid-plan minutes:
 ## Pulling the image
 
 The role pulls `ghcr.io/trollaus/abyss-image:sha-<short>@sha256:<digest>`
-(pinned in host_vars; see the role's README, "Image"). The repo is public,
-so the ghcr package is public by default and the host pulls it anonymously -
-no registry login needed. If the owner ever makes the package private, the
-host pulls it with a registry login under `docker_registry_logins` in the
-parent repo's secret vars (precedent: le-certs, whose pin
-`ghcr.io/trollaus/le-certs` is pulled the same way by the `docker` role
-writing `/root/.docker/config.json`).
+(pinned in host_vars; see the role's README, "Image"). This repo is
+public, so the ghcr package is public by default and the host pulls it
+anonymously - no registry login needed. If the owner ever makes the
+package private, the host pulls it with a registry login (e.g. a
+`docker_registry_logins` entry in the parent repo's secret vars, rendered
+into the host's docker config).

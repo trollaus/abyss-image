@@ -2,9 +2,9 @@
 # The prebuilt engine bundles the CUDA libraries it loads (cudart, cuBLAS, cuBLASLt); the
 # host's nvidia driver (580+, 610+ recommended) provides libcuda.
 #
-# The image is published by this repo's CI (.github/workflows/abyss-image.yml) and pulled by
-# the ansible role (trollaus/infra-ansible, roles/containers/abyss), which pins the reference
-# in host vars. The three ARGs below are the single source of truth for what is in the image;
+# The image is published by this repo's CI (.github/workflows/abyss-image.yml) and
+# pulled by the consuming side - e.g. an ansible container role - which pins
+# the reference in its host vars. The three ARGs below are the single source of truth for what is in the image;
 # a rebuild is what the pins describe.
 #
 # ABYSS_VERSION (an Abyss release tag) is tracked by renovate.json (datasource
