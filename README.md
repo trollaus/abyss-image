@@ -78,8 +78,10 @@ paid-plan minutes:
 
 ## Pulling the image
 
-The role pulls `ghcr.io/trollaus/abyss-image:sha-<short>@sha256:<digest>` (pinned
-in host_vars; see the role's README, "Image"). The package is private; the
+The role pulls `ghcr.io/trollaus/abyss-image:sha-<short>@sha256:<digest>`
+(pinned in host_vars; see the role's README, "Image"). The repo is public,
+so the ghcr package is public by default and the host pulls it anonymously -
+no registry login needed. If the owner ever makes the package private, the
 host pulls it with a registry login under `docker_registry_logins` in the
 parent repo's secret vars (precedent: le-certs, whose pin
 `ghcr.io/trollaus/le-certs` is pulled the same way by the `docker` role
