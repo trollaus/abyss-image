@@ -49,7 +49,7 @@ jobs:
           echo "commit=${commit}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to ghcr
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username __bot__ --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
 
       # The build is self-verifying: the tarball's sha256sum -c and the PREBUILT.json
       # commit check run inside it, so a poisoned digest or a forgotten pin fails here.

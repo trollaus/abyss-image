@@ -14,7 +14,7 @@
         "zephel01/Abyss"
       ],
       "schedule": [
-        "* 6 * * 1"
+        "0 6 * * 1"
       ],
       "postUpgradeTasks": {
         "commands": [
