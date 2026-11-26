@@ -19,7 +19,7 @@ new zephel01/Abyss release
      docker build runs the Dockerfile's own checks - the engine tarball's
      `sha256sum -c` against ABYSS_ENGINE_SHA256, the PREBUILT.json commit
      check against ABYSS_COMMIT, the pip install, py_compile
-  -> merge: CI publishes ghcr.io/trollaus/abyss:sha-<ABYSS_COMMIT short>
+  -> merge: CI publishes ghcr.io/trollaus/abyss-image:sha-<ABYSS_COMMIT short>
      (plus :latest on master) and prints the image digest
   -> one-line digest bump of the role's image reference (abyss.image in
      juhovan/infra host_vars) -> deploy --tags abyss
@@ -44,7 +44,7 @@ Updates are driven by Renovate (weekly schedule, see `renovate.json`):
    unless allowlisted - the CI gate is the enforcement, and the PR body note
    says so), the PR build check catches the stale pins before merge.
 3. Merge the PR: CI publishes the image and prints
-   `abyss.image: ghcr.io/trollaus/abyss:sha-<short>@sha256:<digest>` at the
+   `abyss.image: ghcr.io/trollaus/abyss-image:sha-<short>@sha256:<digest>` at the
    end of the run.
 4. Copy that line into the LLM host's host_vars in juhovan/infra
    (`abyss.image`; the role's README in trollaus/infra-ansible documents the
@@ -78,7 +78,7 @@ paid-plan minutes:
 
 ## Pulling the image
 
-The role pulls `ghcr.io/trollaus/abyss:sha-<short>@sha256:<digest>` (pinned
+The role pulls `ghcr.io/trollaus/abyss-image:sha-<short>@sha256:<digest>` (pinned
 in host_vars; see the role's README, "Image"). The package is private; the
 host pulls it with a registry login under `docker_registry_logins` in the
 parent repo's secret vars (precedent: le-certs, whose pin
