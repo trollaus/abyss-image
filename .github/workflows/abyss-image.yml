@@ -10,9 +10,8 @@ name: Abyss image
 # own files change (the workflow especially, since it enforces everything else), so it never
 # runs on unrelated PRs.
 on:
-  # On-demand rebuild (the first build of a freshly-pushed tree is also
-  # dispatched by hand: a push that touches .github/workflows/* does not
-  # trigger that workflow - GitHub's workflow-file-modification guard).
+  # Manual rebuild / re-publish of a tag without a commit (e.g. a redo after
+  # a pinned upstream release moved).
   workflow_dispatch:
   pull_request:
     paths:
