@@ -26,7 +26,7 @@
       },
       "prBodyNotes": [
         "⚠️ The `ABYSS_COMMIT` and `ABYSS_ENGINE_SHA256` pins in `Dockerfile` are auto-filled by the postUpgradeTask (`.github/renovate/abyss-pins.mjs`): it reads the bumped `ABYSS_VERSION`, resolves the tag's commit and the release's `SHA256SUMS`, and rewrites the two ARGs in place. The task only runs where the command is allowlisted - hosted Mend blocks arbitrary commands - so if the pins are still stale in this PR, the CI build check (`.github/workflows/abyss-image.yml`) is the enforcement: the PR must not pass it while the pins are stale. If the build fails on a pip pin, re-measure the pinned list (the comment above the `pip install` in the Dockerfile) and update it in the same PR.",
-        "After merge, CI publishes `ghcr.io/trollaus/abyss:sha-<ABYSS_COMMIT short>` (plus `latest` on master) and prints the image digest at the end of the run. Update flow: copy that digest line into the role's image reference (`abyss.image`, documented in the role's README in trollaus/infra-ansible) in juhovan/infra host_vars, then deploy `--tags abyss`."
+        "After merge, CI publishes `ghcr.io/trollaus/abyss-image:sha-<ABYSS_COMMIT short>` (plus `latest` on master) and prints the image digest at the end of the run. Update flow: copy that digest line into the role's image reference (`abyss.image`, documented in the role's README in trollaus/infra-ansible) in juhovan/infra host_vars, then deploy `--tags abyss`."
       ]
     }
   ]
