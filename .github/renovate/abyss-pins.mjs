@@ -27,7 +27,6 @@
 
 import { readFile, writeFile } from "node:fs/promises";
 
-const repo = "zephel01/Abyss";
 const engineAsset = "abyss-engine-cuda-linux-x64.tar.gz";
 
 // Timeout + retry on the API calls: a 429/5xx body would otherwise surface as
@@ -52,6 +51,12 @@ const text = await readFile(dfPath, "utf8");
 
 const version = text.match(/^ARG ABYSS_VERSION=(\S+)\s*$/m)?.[1];
 if (!version) throw new Error(`no "ARG ABYSS_VERSION=" line in ${dfPath}`);
+const repo = text.match(/^ARG ABYSS_REPO=(\S+)\s*$/m)?.[1];
+if (!repo) throw new Error(`no "ARG ABYSS_REPO=" line in ${dfPath}`);
+// Renovate looks the version up under the comment's depName: it must be the repo the build fetches.
+const depName = text.match(/^# renovate: datasource=github-releases depName=(\S+)/m)?.[1];
+if (depName !== repo)
+  throw new Error(`the renovate comment's depName (${depName}) is not ABYSS_REPO (${repo}) in ${dfPath}`);
 
 const ref = await getJson(
   `https://api.github.com/repos/${repo}/git/ref/tags/${version}`

@@ -47,7 +47,7 @@ jobs:
         id: pins
         run: |
           # The tag is the ABYSS_COMMIT short sha; the digest step prints the
-          # registry manifest digest the host_vars bump line is pinned with.
+          # registry manifest digest consumers pin.
           commit=$(grep -oP '^ARG ABYSS_COMMIT=\K\S+' Dockerfile)
           echo "commit=${commit}" >> "$GITHUB_OUTPUT"
 
@@ -64,7 +64,7 @@ jobs:
         run: |
           docker push "ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)"
 
-      # On master only: the `latest` tag (the role's default reference tracks it).
+      # On master only: the `latest` tag (a convenience; consumers pin sha-<commit>@digest).
       - name: Tag and push latest
         if: github.ref == 'refs/heads/master'
         run: |
@@ -72,11 +72,10 @@ jobs:
           docker push ghcr.io/trollaus/abyss-image:latest
 
       # The manifest digest, from the registry (a local build has no RepoDigests yet):
-      # the host_vars bump line the role's image reference is pinned with.
+      # the image line a consumer pins (e.g. a role's static docker-compose.yml).
       - name: Print the image digest
         if: github.event_name == 'push'
         run: |
           # The `Digest:` line's sha256: value:
           digest=$(docker buildx imagetools inspect "ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)" | grep -m1 'sha256:' | cut -d: -f3)
-          # The host_vars bump line for the consuming host (e.g. `abyss.image`):
-          echo "abyss.image: ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)@sha256:${digest}"
+          echo "image: ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)@sha256:${digest}"
