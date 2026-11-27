@@ -8,6 +8,6 @@
   elsewhere; point at the source instead of re-stating it.
 - Keep this repo generic so any org can use it: no consumer-org
   references (a specific parent/infra repo, named hosts, sibling
-  artifacts). The ghcr reference (`ghcr.io/trollaus/abyss-image`) and the example host var
-  name (`abyss.image`) are the only org-specific bits.
+  artifacts). The ghcr reference (`ghcr.io/trollaus/abyss-image`) and the engine
+  repo (`ABYSS_REPO`, `juhovan/Abyss`) are the only org-specific bits.
 - Commits: no Co-Authored-By or "Generated with" trailers.

@@ -9,13 +9,14 @@
   "semanticCommits": "disabled",
   "packageRules": [
     {
-      "description": "The release tag (ABYSS_VERSION, a Dockerfile ARG with a `# renovate: datasource=github-releases depName=zephel01/Abyss` comment) is the only thing Renovate tracks; a postUpgradeTask fills the two companion pins (ABYSS_COMMIT, ABYSS_ENGINE_SHA256) after the bump. The schedule is weekly on purpose: the org's CI billing is paid-plan minutes, so the new repo's cadence is capped at weekly (zephel01/Abyss ships ~4.7 releases a day - daily checks would multiply the CI build gate by 7). The task is best-effort: hosted Mend Renovate blocks arbitrary postUpgradeTask commands unless they are allowlisted (docs.renovatebot.com/mend-hosted/faq, \"How can I run arbitrary commands\"), so the CI build check (.github/workflows/abyss-image.yml) is the enforcement.",
+      "description": "The release tag (ABYSS_VERSION, a Dockerfile ARG under a `# renovate: datasource=github-releases depName=juhovan/Abyss` comment) is the only thing Renovate tracks; a postUpgradeTask fills the two companion pins (ABYSS_COMMIT, ABYSS_ENGINE_SHA256) after the bump. The fork's release tags carry a suffix (v1.3.206-slots.1), which semver counts as a pre-release, so ignoreUnstable is off. The task is best-effort: hosted Mend Renovate blocks arbitrary postUpgradeTask commands unless they are allowlisted (docs.renovatebot.com/mend-hosted/faq, \"How can I run arbitrary commands\"), so the CI build check (.github/workflows/abyss-image.yml) is the enforcement.",
       "matchPackageNames": [
-        "zephel01/Abyss"
+        "juhovan/Abyss"
       ],
       "schedule": [
         "* 6 * * 1"
       ],
+      "ignoreUnstable": false,
       "postUpgradeTasks": {
         "commands": [
           "node .github/renovate/abyss-pins.mjs"
@@ -26,7 +27,7 @@
       },
       "prBodyNotes": [
         "⚠️ The `ABYSS_COMMIT` and `ABYSS_ENGINE_SHA256` pins in `Dockerfile` are auto-filled by the postUpgradeTask (`.github/renovate/abyss-pins.mjs`): it reads the bumped `ABYSS_VERSION`, resolves the tag's commit and the release's `SHA256SUMS`, and rewrites the two ARGs in place. The task only runs where the command is allowlisted - hosted Mend blocks arbitrary commands - so if the pins are still stale in this PR, the CI build check (`.github/workflows/abyss-image.yml`) is the enforcement: the PR must not pass it while the pins are stale. If the build fails on a pip pin, re-measure the pinned list (the comment above the `pip install` in the Dockerfile) and update it in the same PR.",
-        "After merge, CI publishes `ghcr.io/trollaus/abyss-image:sha-<ABYSS_COMMIT short>` (plus `latest` on master) and prints the image digest at the end of the run. Update flow: copy that digest line into the role's image reference (`abyss.image`, documented in the consuming role's README) in the parent repo's host_vars, then deploy the role (e.g. `--tags abyss`)."
+        "After merge, CI publishes `ghcr.io/trollaus/abyss-image:sha-<ABYSS_COMMIT short>` (plus `latest` on master) and prints the pinned `image:` line at the end of the run. Update flow: put that line in the consuming role's static `docker-compose.yml` (the role documents its image pin), then deploy the role (e.g. `--tags abyss`)."
       ]
     }
   ]
