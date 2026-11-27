@@ -46,10 +46,13 @@ jobs:
       - name: Read the pins
         id: pins
         run: |
-          # The tag is the ABYSS_COMMIT short sha; the digest step prints the
-          # registry manifest digest consumers pin.
+          # Tags: the release (ABYSS_VERSION, which consumers pin by digest and Renovate orders)
+          # and sha-<ABYSS_COMMIT short>.
+          version=$(grep -oP '^ARG ABYSS_VERSION=\K\S+' Dockerfile)
           commit=$(grep -oP '^ARG ABYSS_COMMIT=\K\S+' Dockerfile)
-          echo "commit=${commit}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/trollaus/abyss-image" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "sha=sha-$(echo "${commit}" | cut -c1-12)" >> "$GITHUB_OUTPUT"
 
       - name: Log in to ghcr
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
@@ -57,25 +60,26 @@ jobs:
       # The build is self-verifying: the tarball's sha256sum -c and the PREBUILT.json
       # commit check run inside it, so a poisoned digest or a forgotten pin fails here.
       - name: Build the abyss image
-        run: docker build --pull -f Dockerfile -t "ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)" .
+        run: docker build --pull -f Dockerfile -t "${{ steps.pins.outputs.image }}:${{ steps.pins.outputs.version }}" .
 
+      # Publish on master: a push, or a manual run (workflow_dispatch) of master. PR builds only build.
       - name: Push the abyss image
-        if: github.event_name == 'push'
-        run: |
-          docker push "ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)"
-
-      # On master only: the `latest` tag (a convenience; consumers pin sha-<commit>@digest).
-      - name: Tag and push latest
         if: github.ref == 'refs/heads/master'
+        env:
+          IMAGE: ${{ steps.pins.outputs.image }}
+          VERSION: ${{ steps.pins.outputs.version }}
+          SHA_TAG: ${{ steps.pins.outputs.sha }}
         run: |
-          docker tag "ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)" ghcr.io/trollaus/abyss-image:latest
-          docker push ghcr.io/trollaus/abyss-image:latest
+          for t in "$SHA_TAG" latest; do docker tag "$IMAGE:$VERSION" "$IMAGE:$t"; done
+          for t in "$VERSION" "$SHA_TAG" latest; do docker push "$IMAGE:$t"; done
 
       # The manifest digest, from the registry (a local build has no RepoDigests yet):
       # the image line a consumer pins (e.g. a role's static docker-compose.yml).
       - name: Print the image digest
-        if: github.event_name == 'push'
+        if: github.ref == 'refs/heads/master'
+        env:
+          IMAGE: ${{ steps.pins.outputs.image }}
+          VERSION: ${{ steps.pins.outputs.version }}
         run: |
-          # The `Digest:` line's sha256: value:
-          digest=$(docker buildx imagetools inspect "ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)" | grep -m1 'sha256:' | cut -d: -f3)
-          echo "image: ghcr.io/trollaus/abyss-image:sha-$(echo "${{ steps.pins.outputs.commit }}" | cut -c1-12)@sha256:${digest}"
+          digest=$(docker buildx imagetools inspect "$IMAGE:$VERSION" | grep -m1 'sha256:' | cut -d: -f3)
+          echo "image: $IMAGE:$VERSION@sha256:${digest}"

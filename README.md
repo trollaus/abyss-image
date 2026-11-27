@@ -28,10 +28,11 @@ new juhovan/Abyss release
      docker build runs the Dockerfile's own checks - the engine tarball's
      `sha256sum -c` against ABYSS_ENGINE_SHA256, the PREBUILT.json commit
      check against ABYSS_COMMIT, the pip install, py_compile
-  -> merge: CI publishes ghcr.io/trollaus/abyss-image:sha-<ABYSS_COMMIT short>
-     (plus :latest on master) and prints the pinned image line
-  -> the consuming role's static docker-compose.yml moves to that line
-     -> deploy --tags abyss
+  -> merge: CI publishes ghcr.io/trollaus/abyss-image:<ABYSS_VERSION> (the fork
+     release, eg. v1.3.206-slots.1), :sha-<ABYSS_COMMIT short> and :latest, and
+     prints the pinned image line
+  -> the consuming role's Renovate proposes the new release tag (or the line is
+     pasted into its static docker-compose.yml) -> deploy --tags abyss
 ```
 
 The build is self-verifying on every run: a moved tag or a replaced release
@@ -75,10 +76,12 @@ Updates are driven by Renovate (weekly schedule, see `renovate.json`):
    commands unless allowlisted - the CI gate is the enforcement, and the PR
    body note says so), the PR build check catches the stale pins before merge.
 3. Merge the PR: CI publishes the image and prints
-   `image: ghcr.io/trollaus/abyss-image:sha-<short>@sha256:<digest>` at the end
-   of the run.
-4. Put that line in the consuming role's static `docker-compose.yml` and
-   deploy `--tags abyss`.
+   `image: ghcr.io/trollaus/abyss-image:<ABYSS_VERSION>@sha256:<digest>` at the
+   end of the run. A manual run of the workflow on master (workflow_dispatch)
+   rebuilds and re-publishes the same tags.
+4. The consuming role's Renovate proposes the new release tag (it orders
+   `v<x.y.z>-slots.<n>`); or put the printed line in its static
+   `docker-compose.yml`. Then deploy `--tags abyss`.
 
 Check the pip pins against a new release when a bump lands (the comment above
 the `pip install` in the Dockerfile) and bump them in the same PR.
@@ -105,7 +108,7 @@ standard hosted runners at no cost; neither uses larger runners.
 ## Pulling the image
 
 The consuming role pins
-`ghcr.io/trollaus/abyss-image:sha-<short>@sha256:<digest>` in its static
+`ghcr.io/trollaus/abyss-image:<ABYSS_VERSION>@sha256:<digest>` in its static
 `docker-compose.yml` (see the role's README, "Image"). This repo is public, so
 the ghcr package is public and the host pulls it anonymously - no registry
 login needed. If the owner ever makes the package private, the host pulls it
